@@ -23,7 +23,7 @@ network_sw_path = network_sw_root / sw_name
 current_branch = subprocess.getoutput("git branch --show-current")
 # real build if building master/main git branch
 # TODO branch sofics => always real build ? or current_branch == "sofics"
-real_build = bool(current_branch == "master" or current_branch == "main")
+real_build = bool(current_branch == "master" or current_branch == "main" or current_branch == "sofics")
 
 print("Start building " + sw_name)
 start = time.time()
@@ -45,11 +45,11 @@ command_args += [
     "--noconfirm",
 ]
 
-if real_build:
-    # command_args.append("--windowed")  # Not using this option to avoid SVN pop-ups + show potential exceptions.
-    command_args.append("--upx-dir=./scripts/upx")
-    # TODO check if _greenlet.cp311-win_amd64.pyd is actually problematic
-    command_args.append("--upx-exclude=_greenlet.*.pyd")
+# if real_build:
+#     # command_args.append("--windowed")  # Not using this option to avoid SVN pop-ups + show potential exceptions.
+#     command_args.append("--upx-dir=./scripts/upx")
+#     # TODO check if _greenlet.cp311-win_amd64.pyd is actually problematic
+#     command_args.append("--upx-exclude=_greenlet.*.pyd")
 
 
 command_args.append("main.py")
