@@ -74,20 +74,21 @@ class PythonHighlighter(QSyntaxHighlighter):
         # Comparison
         '==', '!=', '<', '<=', '>', '>=',
         # Arithmetic
-        r'+', '-', r'*', '/', '//', r'%', r'**',
+        '\+', '-', '\*', '/', '//', '\%', '\*\*',
         # In-place
-        r'+=', '-=', r'*=', '/=', r'%=',
+        '\+=', '-=', '\*=', '/=', '\%=',
         # Bitwise
-        r'^', r'|', r'&', r'~', '>>', '<<',
+        '\^', '\|', '\&', '\~', '>>', '<<',
     ]
 
     # Python braces
     braces = [
-        r'{', r'}', r'(', r')', r'[', r']',
+        '\{', '\}', '\(', '\)', '\[', '\]',
     ]
 
     def __init__(self, document, dark=False):
         QSyntaxHighlighter.__init__(self, document)
+
 
         self.STYLES = DARK_STYLES if dark else LIGHT_STYLES
         document.parent().parent().setStyleSheet(f"""QPlainTextEdit{{
