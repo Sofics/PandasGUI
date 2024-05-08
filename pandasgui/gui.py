@@ -121,7 +121,7 @@ class PandasGui(QtWidgets.QMainWindow):
                   int((screen.height() - size.height()) / 2), )
 
         # Set window title and icon
-        self.setWindowTitle("PandasGUI")
+        self.setWindowTitle("DataViewer")
         pdgui_icon_path = pkg_resources.resource_filename(__name__, "resources/images/icon.png")
         self.app.setWindowIcon(QtGui.QIcon(pdgui_icon_path))
 
@@ -355,17 +355,17 @@ class PandasGui(QtWidgets.QMainWindow):
         command_value = rf'{sys.executable} -m pandasgui.run_with_args "%V"'
         icon_value = fr"{os.path.dirname(pandasgui.__file__)}\resources\images\icon.ico"
 
-        handle = winreg.CreateKeyEx(key, "Software\Classes\*\shell\Open with PandasGUI\command", 0,
+        handle = winreg.CreateKeyEx(key, r"Software\Classes\*\shell\Open with PandasGUI\command", 0,
                                     winreg.KEY_SET_VALUE)
         winreg.SetValueEx(handle, "", 0, winreg.REG_SZ, command_value)
-        handle = winreg.CreateKeyEx(key, "Software\Classes\*\shell\Open with PandasGUI", 0, winreg.KEY_SET_VALUE)
+        handle = winreg.CreateKeyEx(key, r"Software\Classes\*\shell\Open with PandasGUI", 0, winreg.KEY_SET_VALUE)
         winreg.SetValueEx(handle, "icon", 0, winreg.REG_SZ, icon_value)
 
     def remove_from_context_menu(self):
         import winreg
         key = winreg.HKEY_CURRENT_USER
-        winreg.DeleteKey(key, "Software\Classes\*\shell\Open with PandasGUI\command")
-        winreg.DeleteKey(key, "Software\Classes\*\shell\Open with PandasGUI")
+        winreg.DeleteKey(key, r"Software\Classes\*\shell\Open with PandasGUI\command")
+        winreg.DeleteKey(key, r"Software\Classes\*\shell\Open with PandasGUI")
 
     def add_jupyter_to_context_menu(self):
         import winreg
@@ -374,18 +374,18 @@ class PandasGui(QtWidgets.QMainWindow):
         command_value = rf'cmd.exe /k jupyter lab --notebook-dir="%V"'
         icon_value = fr"{os.path.dirname(pandasgui.__file__)}\resources\images\jupyter_icon.ico"
 
-        handle = winreg.CreateKeyEx(key, "Software\Classes\directory\Background\shell\Open with JupyterLab\command", 0,
+        handle = winreg.CreateKeyEx(key, r"Software\Classes\directory\Background\shell\Open with JupyterLab\command", 0,
                                     winreg.KEY_SET_VALUE)
         winreg.SetValueEx(handle, "", 0, winreg.REG_SZ, command_value)
-        handle = winreg.CreateKeyEx(key, "Software\Classes\directory\Background\shell\Open with JupyterLab", 0,
+        handle = winreg.CreateKeyEx(key, r"Software\Classes\directory\Background\shell\Open with JupyterLab", 0,
                                     winreg.KEY_SET_VALUE)
         winreg.SetValueEx(handle, "icon", 0, winreg.REG_SZ, icon_value)
 
     def remove_jupyter_from_context_menu(self):
         import winreg
         key = winreg.HKEY_CURRENT_USER
-        winreg.DeleteKey(key, "Software\Classes\directory\Background\shell\Open with JupyterLab\command")
-        winreg.DeleteKey(key, "Software\Classes\directory\Background\shell\Open with JupyterLab")
+        winreg.DeleteKey(key, r"Software\Classes\directory\Background\shell\Open with JupyterLab\command")
+        winreg.DeleteKey(key, r"Software\Classes\directory\Background\shell\Open with JupyterLab")
 
     def edit_settings(self):
 
