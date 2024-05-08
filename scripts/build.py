@@ -36,9 +36,11 @@ command_args += [
     f"{sw_name}",
     "--collect-data",
     "qtstylish",
-    # TODO try --collect-data qtstylish
+    "--hidden-import",
+    "qtstylish.compiled.qtstylish_rc",
+    # TODO if multiple problems remain: --collect-submodules qtstylish
     "--add-data",
-    "pandasgui/resources;resources",
+    "pandasgui/resources;pandasgui/resources",
     "--icon=pandasgui/resources/images/icon.ico",
     "--noconfirm",
 ]
