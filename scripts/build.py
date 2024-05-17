@@ -45,6 +45,13 @@ command_args += [
     "--noconfirm",
 ]
 
+# TODO get upx to work... way too big otherwise
+# subprocess.CalledProcessError: Command '['./scripts/upx\\upx', '--compress-icons=0', '--lzma', '-q', '--strip-loadconf', 'C:\\Users\\rboone\\AppData\\Local\\pyinstaller\\bincache01py31264bit\\_uuid.pyd']' returned non-zero exit status 1.
+# upx: C:\Users\rboone\AppData\Local\pyinstaller\bincache01py31264bit\_uuid.pyd: NotCompressibleException
+# subprocess.CalledProcessError: Command '['./scripts/upx\\upx', '--compress-icons=0', '--lzma', '-q', '--strip-loadconf', 'C:\\Users\\rboone\\AppData\\Local\\pyinstaller\\bincache01py31264bit\\python3.dll']
+# upx: C:\Users\rboone\AppData\Local\pyinstaller\bincache01py31264bit\python3.dll: NotCompressibleException
+# TODO subprocess.CalledProcessError: Command '['./scripts/upx\\upx', '--compress-icons=0', '--lzma', '-q', '--strip-loadconf', 'C:\\Users\\rboone\\AppData\\Local\\pyinstaller\\bincache01py31264bit\\api-ms-win-core-file-l2-1-0.dll']' returned non-zero exit status 1.
+# TODO upx: C:\Users\rboone\AppData\Local\pyinstaller\bincache01py31264bit\api-ms-win-core-file-l2-1-0.dll: NotCompressibleException
 # if real_build:
 #     # command_args.append("--windowed")  # Not using this option to avoid SVN pop-ups + show potential exceptions.
 #     command_args.append("--upx-dir=./scripts/upx")
