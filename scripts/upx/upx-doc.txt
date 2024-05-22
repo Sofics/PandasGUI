@@ -6,7 +6,7 @@ SYNOPSIS
 
 ABSTRACT
                         The Ultimate Packer for eXecutables
-       Copyright (c) 1996-2023 Markus Oberhumer, Laszlo Molnar & John Reiser
+       Copyright (c) 1996-2024 Markus Oberhumer, Laszlo Molnar & John Reiser
                                https://upx.github.io
 
     UPX is a portable, extendable, high-performance executable packer for
@@ -153,7 +153,7 @@ OVERLAY HANDLING OPTIONS
     UPX handles overlays like many other executable packers do: it simply
     copies the overlay after the compressed image. This works with some
     files, but doesn't work with others, depending on how an application
-    actually accesses this overlayed data.
+    actually accesses this overlaid data.
 
       --overlay=copy    Copy any extra data attached to the file. [DEFAULT]
 
@@ -815,16 +815,12 @@ AUTHORS
 
      John F. Reiser <jreiser@BitWagon.com>
 
-     Jens Medoch <jssg@users.sourceforge.net>
-
 COPYRIGHT
-    Copyright (C) 1996-2023 Markus Franz Xaver Johannes Oberhumer
+    Copyright (C) 1996-2024 Markus Franz Xaver Johannes Oberhumer
 
-    Copyright (C) 1996-2023 Laszlo Molnar
+    Copyright (C) 1996-2024 Laszlo Molnar
 
-    Copyright (C) 2000-2023 John F. Reiser
-
-    Copyright (C) 2002-2023 Jens Medoch
+    Copyright (C) 2000-2024 John F. Reiser
 
     UPX is distributed with full source code under the terms of the GNU
     General Public License v2+; either under the pure GPLv2+ (see the file
