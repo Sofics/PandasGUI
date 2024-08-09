@@ -339,7 +339,7 @@ class PandasGui(QtWidgets.QMainWindow):
         pgdf = self.store.selected_pgdf
         path, _ = dialog.getSaveFileName(directory=pgdf.name, filter="*.csv")
         if path:
-            pgdf.df.to_csv(path, index=False)
+            pgdf.df.to_csv(path, sep=";", index=False)
 
     def import_from_clipboard(self):
         df = pd.read_clipboard(sep=',|\t', engine="python",
