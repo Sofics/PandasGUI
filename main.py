@@ -9,12 +9,6 @@ import pandas as pd
 
 def main():
     try:
-        # TEST_ENGINE = create_engine(
-        #     f"mysql+pymysql://root:test@127.0.0.1:1234/test",
-        #     pool_recycle=3600,
-        #     echo=False,  # to see sql execution
-        # )
-
         # TODO some kind of loading bar / progress dlg?
 
         TEGGY_ENGINE = create_engine(
@@ -23,22 +17,21 @@ def main():
             # echo=True,  # to see sql execution
         )
 
-        # TODO remove csv stuff
-        csv_path = Path(__file__).parent / "pandasgui/resources/delivered_cells.csv"
-        print(csv_path)
-        delivered_cells_df = pd.read_csv(str(csv_path))
-
-        named_dataframes = {
-            # TODO take from DB again (union with new delivered cells table)
-            "Delivered cells": pd.read_sql_query("""
+        all_delived_cells = pd.read_sql_query("""
 (SELECT customer, project_nr, project_lead, snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, area  FROM DeliveredCell dc)
 UNION
 (SELECT customer, project_nr, project_lead, NULL as snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, NULL as area FROM OldDeliveredCell odc)
 ORDER BY delivery_date desc;
-""",
-                                                 TEGGY_ENGINE
-                                                 ),
-            # "Delivered cells": delivered_cells_df,
+""", TEGGY_ENGINE)
+
+        # TODO make dataframe that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"
+        # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
+        # tsmc_cells_for_ip_registry = None
+
+
+        named_dataframes = {
+            "Delivered cells": all_delived_cells,
+            # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
         }
 
         show(**named_dataframes)
