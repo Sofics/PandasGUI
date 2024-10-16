@@ -100,7 +100,7 @@ class PandasGui(QtWidgets.QMainWindow):
         # Default to first item
         self.navigator.setCurrentItem(self.navigator.topLevelItem(0))
 
-        self.show()
+        self.showMaximized()
         # Start event loop if blocking enabled
         if self.store.settings.block.value:
             self.app.exec_()
