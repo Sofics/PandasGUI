@@ -142,10 +142,13 @@ class PandasGui(QtWidgets.QMainWindow):
         self.splitter.addWidget(self.navigator)
         self.splitter.addWidget(self.stacked_widget)
 
-        self.splitter.setCollapsible(0, False)
-        self.splitter.setCollapsible(1, False)
-        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setCollapsible(0, True)
+        self.splitter.setCollapsible(1, True)
+        self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 1)
+
+        # Custom Sofics code:
+        self.splitter.setSizes([0, 1])  # collapse the navigator (not needed most of the time?)
 
         # makes the find toolbar
         self.find_bar = FindToolbar(self)
