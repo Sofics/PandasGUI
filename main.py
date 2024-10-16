@@ -28,6 +28,8 @@ ORDER BY delivery_date desc;
         # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
         # tsmc_cells_for_ip_registry = None
 
+        # transform None -> NaT, so comparison in GUI query expressions works:
+        all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
 
         named_dataframes = {
             "Delivered cells": all_delived_cells,
@@ -42,5 +44,5 @@ ORDER BY delivery_date desc;
         input()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

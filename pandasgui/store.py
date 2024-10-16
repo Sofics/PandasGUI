@@ -875,6 +875,23 @@ class PandasGuiStore:
         pgdf = self.data[name]
         self.gui.stacked_widget.setCurrentWidget(pgdf.pg_widget())
         self.selected_pgdf = pgdf
+        if name == "Delivered cells":
+            standard_filter_expressions = [
+                'customer.str.contains("nordic", case=False, na=False)',
+                'project_nr == "CPA259"',
+                'project_lead == "HM"',
+                'delivery_date > "2024-10-1"',
+                'foundry == "TSMC"',
+                'technology == "CMOS"',
+                'node == "130nm"',
+                'domain.str.contains("3", case=False, na=False)',
+                'tag == "SV2024_013"',
+                'delivery_contact.str.contains("christian", case=False, na=False)',
+                'senumber.str.contains("MOS", case=False, na=False) and senumber.str.contains("SCR", case=False, na=False)',
+            ]
+            for expr in standard_filter_expressions:
+                self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))
+            self.selected_pgdf.refresh_ui()  # to update Filters area in GUI
 
     def to_dict(self):
         import json
