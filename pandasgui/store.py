@@ -887,7 +887,7 @@ class PandasGuiStore:
                 'domain.str.contains("3", case=False, na=False)',
                 'tag == "SV2024_013"',
                 'delivery_contact.str.contains("christian", case=False, na=False)',
-                'senumber.str.contains("MOS", case=False, na=False) and senumber.str.contains("SCR", case=False, na=False)',
+                'senumber.str.contains("MOS", case=False, na=False) or senumber.str.contains("SCR", case=False, na=False)',
             ]
             for expr in standard_filter_expressions:
                 self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))

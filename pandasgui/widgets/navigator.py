@@ -59,6 +59,7 @@ class DelayedMimeData(QtCore.QMimeData):
 
         return QtCore.QMimeData.retrieveData(self, mime_type, preferred_type)
 
+
 class Navigator(FlatDraggableTree):
     def __init__(self, store):
         super().__init__()
