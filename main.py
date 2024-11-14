@@ -18,7 +18,7 @@ def main():
         )
 
         all_delived_cells = pd.read_sql_query("""
-(SELECT customer, project_nr, project_lead, snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, area  FROM DeliveredCell dc)
+(SELECT customer, project_nr, project_lead, snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, CAST(domain AS CHAR) as domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, area  FROM DeliveredCell dc)
 UNION
 (SELECT customer, project_nr, project_lead, NULL as snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, NULL as area FROM OldDeliveredCell odc)
 ORDER BY delivery_date desc;
