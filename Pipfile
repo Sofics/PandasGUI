@@ -24,6 +24,7 @@ sqlalchemy = "*"
 pymysql = "*"
 cryptography = "*"
 pyinstaller = "*"
+openpyxl = "*"
 
 [dev-packages]
 
