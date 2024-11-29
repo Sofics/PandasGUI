@@ -33,6 +33,7 @@ def main():
         # WaferVolume <-> request BK
         # for how this view got created, see bottom of this file
         wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
+        wafer_volumes["date"] = pd.to_datetime(wafer_volumes["date"], errors="coerce")
 
         named_dataframes = {
             "Delivered cells": all_delived_cells,
@@ -66,25 +67,39 @@ if __name__ == "__main__":
 
 
 # CREATE VIEW DetailedWaferVolume AS
-# WITH RankedData AS (
+# WITH LatestDeliveries AS (
 #     SELECT
-#         wv.date,
-#         dc.customer,
-#         wv.ip_name,
-#         wv.ip_version,
-#         wv.tapeouts,
-#         wv.wafers,
-#         dc.node,
-#         dc.technology,
-#         dc.foundry,
+#         product,
+#         tag,
+#         customer,
+#         node,
+#         technology,
+#         foundry,
+#         delivery_date,
+#         ROW_NUMBER() OVER (PARTITION BY product, tag ORDER BY delivery_date DESC) AS rn
+#     FROM AllDeliveredCells
+# ),
+# RankedData AS (
+#     SELECT
+#         wv.date AS date,
+#         ld.customer AS customer,
+#         wv.ip_name AS ip_name,
+#         wv.ip_version AS ip_version,
+#         wv.tapeouts AS tapeouts,
+#         wv.wafers AS wafers,
+#         ld.node AS node,
+#         ld.technology AS technology,
+#         ld.foundry AS foundry,
+#         ld.delivery_date AS delivery_date,
 #         LAG(wv.tapeouts) OVER (PARTITION BY wv.ip_name, wv.ip_version ORDER BY wv.date) AS prev_tapeouts,
 #         LAG(wv.wafers) OVER (PARTITION BY wv.ip_name, wv.ip_version ORDER BY wv.date) AS prev_wafers
-#     FROM
-#         WaferVolume wv
-#     LEFT JOIN
-#         AllDeliveredCells dc
-#     ON
-#         wv.ip_name = dc.product AND wv.ip_version = dc.tag
+#     FROM WaferVolume wv
+#     LEFT JOIN (
+#         SELECT *
+#         FROM LatestDeliveries
+#         WHERE rn = 1
+#     ) ld
+#     ON wv.ip_name = ld.product AND wv.ip_version = ld.tag
 # )
 # SELECT
 #     date,
@@ -97,9 +112,7 @@ if __name__ == "__main__":
 #     wafers,
 #     node,
 #     technology,
-#     foundry
-# FROM
-#     RankedData
-# ORDER BY
-#     date DESC,
-#     new_wafers DESC;
+#     foundry,
+#     delivery_date
+# FROM RankedData
+# ORDER BY date DESC, new_wafers DESC;

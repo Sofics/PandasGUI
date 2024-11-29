@@ -899,7 +899,8 @@ class PandasGuiStore:
                 'ip_name == "SOFICS_TSMC_N65LP_ESD_1V2" and ip_version == "1.0"',
                 'customer.str.contains("nordic", case=False, na=False)',
                 'node == "55nm"',
-                'technology == "FinFET"'
+                'technology == "FinFET"',
+                'date > "2024-09-30"',
             ]
             for expr in standard_filter_expressions:
                 self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))
