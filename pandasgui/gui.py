@@ -2,14 +2,17 @@ import inspect
 import os
 import sys
 import pprint
+from pathlib import Path
 from typing import Callable, Union
 from dataclasses import dataclass
 import pandas as pd
 import pkg_resources
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog
 
 import pandasgui
+from custom_back_end.parse_tsmc_export import parse_tsmc_export_to_wafer_volumes
 from pandasgui.store import PandasGuiStore
 from pandasgui.utility import as_dict, fix_ipython, get_figure_type, resize_widget
 from pandasgui.widgets.find_toolbar import FindToolbar
@@ -201,14 +204,14 @@ class PandasGui(QtWidgets.QMainWindow):
                           MenuItem(name='Code Export',
                                    func=self.show_code_export),
                           ],
-                 'DataFrame': [MenuItem(name='Delete Selected DataFrames',
-                                        func=self.delete_selected_dataframes),
-                               MenuItem(name='Reload DataFrames',
-                                        func=self.reload_data,
-                                        shortcut='Ctrl+R'),
-                               MenuItem(name='Parse All Dates',
-                                        func=lambda: self.store.selected_pgdf.parse_all_dates()),
-                               ],
+                 # 'DataFrame': [MenuItem(name='Delete Selected DataFrames',
+                 #                        func=self.delete_selected_dataframes),
+                 #               MenuItem(name='Reload DataFrames',
+                 #                        func=self.reload_data,
+                 #                        shortcut='Ctrl+R'),
+                 #               MenuItem(name='Parse All Dates',
+                 #                        func=lambda: self.store.selected_pgdf.parse_all_dates()),
+                 #               ],
                  'Settings': [MenuItem(name='Preferences...',
                                        func=self.edit_settings),
                               {"Context Menus": [MenuItem(name='Add DataViewer To Context Menu',
@@ -221,14 +224,16 @@ class PandasGui(QtWidgets.QMainWindow):
                                                           func=self.remove_jupyter_from_context_menu), ]}
 
                               ],
-                 'Debug': [MenuItem(name='About',
-                                    func=self.about),
-                           MenuItem(name='Browse Sample Datasets',
-                                    func=self.show_sample_datasets),
-                           MenuItem(name='View DataViewerStore',
-                                    func=self.view_store),
-                           MenuItem(name='View DataFrame History',
-                                    func=self.view_history),
+                 # 'Debug': [MenuItem(name='About',
+                 #                    func=self.about),
+                 #           MenuItem(name='Browse Sample Datasets',
+                 #                    func=self.show_sample_datasets),
+                 #           MenuItem(name='View DataViewerStore',
+                 #                    func=self.view_store),
+                 #           MenuItem(name='View DataFrame History',
+                 #                    func=self.view_history),
+                 #           ]
+                 'Wafer volume': [MenuItem(name='Import new TSMC Excel', func=self.import_new_tsmc_excel),
                            ]
                  }
 
@@ -410,6 +415,15 @@ class PandasGui(QtWidgets.QMainWindow):
         # dialog.resize(500, 500)
         dialog.setWindowTitle("About")
         dialog.show()
+
+    def import_new_tsmc_excel(self):
+        # TODO with the 20241001 example, the data got messed up ???
+        # TODO print / output how many were actually added to the database?
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')
+        if file_path:
+            parse_tsmc_export_to_wafer_volumes(Path(file_path))
+
+        # TODO reload the wafer volumes / restart the DataViewer
 
     def show_sample_datasets(self):
         from pandasgui.datasets import LOCAL_DATASET_DIR

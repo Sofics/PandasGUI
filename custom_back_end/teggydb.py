@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, Column, DATE, VARCHAR
 from sqlalchemy.dialects.mysql import MEDIUMINT, INTEGER, SMALLINT
 from sqlalchemy.orm import declarative_base, Session
 
-import cfg
+import custom_back_end.cfg as cfg
 
 TEGGY_ENGINE = create_engine(
     f"mysql+pymysql://{cfg.TeggyDB.username}:{cfg.TeggyDB.password}@{cfg.TeggyDB.host}/{cfg.TeggyDB.name}",

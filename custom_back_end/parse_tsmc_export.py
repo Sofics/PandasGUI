@@ -6,7 +6,7 @@ from pprint import pprint
 
 from openpyxl.reader.excel import load_workbook
 
-from teggydb import WaferVolume
+from custom_back_end.teggydb import WaferVolume
 
 
 def parse_tsmc_export_to_wafer_volumes(tsmc_export_path: Path):
