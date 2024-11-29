@@ -40,6 +40,16 @@ class WaferVolume(Base):
         self.tapeouts = tapeouts
         self.wafers = wafers
 
+    def __hash__(self):
+        return hash(self.ip_name + self.ip_version + str(self.date))
+
+    def __eq__(self, other):
+        if isinstance(self, WaferVolume) and isinstance(other, WaferVolume):
+            return self.__hash__() == other.__hash__()
+        else:
+            return False
+
+    def save_to_db_if_not_present(self):
         with Session(bind=TEGGY_ENGINE, expire_on_commit=False) as session:
             wafer_volume = session.query(WaferVolume).filter(
                 WaferVolume.date == self.date,
