@@ -875,7 +875,7 @@ class PandasGuiStore:
         pgdf = self.data[name]
         self.gui.stacked_widget.setCurrentWidget(pgdf.pg_widget())
         self.selected_pgdf = pgdf
-        if name == "Delivered cells":
+        if name == "Delivered cells" and len(self.selected_pgdf.filters) == 0:
             standard_filter_expressions = [
                 'customer.str.contains("nordic", case=False, na=False)',
                 'project_nr == "CPA259"',
@@ -888,6 +888,18 @@ class PandasGuiStore:
                 'tag == "SV2024_013"',
                 'delivery_contact.str.contains("christian", case=False, na=False)',
                 'senumber.str.contains("MOS", case=False, na=False) or senumber.str.contains("SCR", case=False, na=False)',
+            ]
+            for expr in standard_filter_expressions:
+                self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))
+            self.selected_pgdf.refresh_ui()  # to update Filters area in GUI
+
+        elif name == "Wafer volumes" and len(self.selected_pgdf.filters) == 0:
+            standard_filter_expressions = [
+                'new_wafers > 0',
+                'ip_name == "SOFICS_TSMC_N65LP_ESD_1V2" and ip_version == "1.0"',
+                'customer.str.contains("nordic", case=False, na=False)',
+                'node == "55nm"',
+                'technology == "FinFET"'
             ]
             for expr in standard_filter_expressions:
                 self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))

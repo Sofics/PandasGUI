@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 from sqlalchemy import create_engine
@@ -17,12 +18,10 @@ def main():
             # echo=True,  # to see sql execution
         )
 
-        all_delived_cells = pd.read_sql_query("""
-(SELECT customer, project_nr, project_lead, snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, CAST(domain AS CHAR) as domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, area  FROM DeliveredCell dc)
-UNION
-(SELECT customer, project_nr, project_lead, NULL as snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, NULL as area FROM OldDeliveredCell odc)
-ORDER BY delivery_date desc;
-""", TEGGY_ENGINE)
+        timestamp = time.time()
+
+        # For how this view got created, see bottom of this file
+        all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
 
         # TODO make dataframe that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"
         # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
@@ -31,10 +30,17 @@ ORDER BY delivery_date desc;
         # transform None -> NaT, so comparison in GUI query expressions works:
         all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
 
+        # WaferVolume <-> request BK
+        # for how this view got created, see bottom of this file
+        wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
+
         named_dataframes = {
             "Delivered cells": all_delived_cells,
+            "Wafer volumes": wafer_volumes,
             # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
         }
+
+        print(f"DB and DF stuff took {time.time() - timestamp} seconds.")
 
         show(**named_dataframes)
 
@@ -46,3 +52,54 @@ ORDER BY delivery_date desc;
 
 if __name__ == "__main__":
     main()
+
+
+
+################# view creation queries #####################
+
+
+# create view AllDeliveredCells as
+# (SELECT customer, project_nr, project_lead, snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, CAST(domain AS CHAR) as domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, area  FROM DeliveredCell dc)
+# UNION
+# (SELECT customer, project_nr, project_lead, NULL as snap_name, name, delivery_date, datasheet, foundry, node, technology, flavour, domain, tag, metric, delivery_contact, product, gds_name, drm_name, drm_version, drc_name, drc_version, lvs_name, lvs_version, spice_name, spice_version, senumber, NULL as area FROM OldDeliveredCell odc)
+# ORDER BY delivery_date desc;
+
+
+# CREATE VIEW DetailedWaferVolume AS
+# WITH RankedData AS (
+#     SELECT
+#         wv.date,
+#         dc.customer,
+#         wv.ip_name,
+#         wv.ip_version,
+#         wv.tapeouts,
+#         wv.wafers,
+#         dc.node,
+#         dc.technology,
+#         dc.foundry,
+#         LAG(wv.tapeouts) OVER (PARTITION BY wv.ip_name, wv.ip_version ORDER BY wv.date) AS prev_tapeouts,
+#         LAG(wv.wafers) OVER (PARTITION BY wv.ip_name, wv.ip_version ORDER BY wv.date) AS prev_wafers
+#     FROM
+#         WaferVolume wv
+#     LEFT JOIN
+#         AllDeliveredCells dc
+#     ON
+#         wv.ip_name = dc.product AND wv.ip_version = dc.tag
+# )
+# SELECT
+#     date,
+#     customer,
+#     ip_name,
+#     ip_version,
+#     tapeouts - COALESCE(prev_tapeouts, 0) AS new_tapeouts,
+#     wafers - COALESCE(prev_wafers, 0) AS new_wafers,
+#     tapeouts,
+#     wafers,
+#     node,
+#     technology,
+#     foundry
+# FROM
+#     RankedData
+# ORDER BY
+#     date DESC,
+#     new_wafers DESC;
