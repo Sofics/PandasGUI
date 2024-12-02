@@ -49,7 +49,10 @@ class WaferVolume(Base):
         else:
             return False
 
-    def save_to_db_if_not_present(self):
+    def save_to_db_if_not_present(self) -> bool:
+        """Save this WaferVolume to the db except for if one was already present with the same date, name and version.
+        Returns True, or False if an equivalent one was already present and nothing was pushed to the database.
+        """
         with Session(bind=TEGGY_ENGINE, expire_on_commit=False) as session:
             wafer_volume = session.query(WaferVolume).filter(
                 WaferVolume.date == self.date,
@@ -59,10 +62,15 @@ class WaferVolume(Base):
 
             if wafer_volume:
                 print("Specific WaferVolume already in database => skipping")
+
+                return False
+
             else:
                 # Not in database yet? Add it
                 session.add(self)
                 session.commit()
+
+                return True
 
     def delete_from_db(self) -> None:
         with Session(bind=TEGGY_ENGINE, expire_on_commit=False) as session:

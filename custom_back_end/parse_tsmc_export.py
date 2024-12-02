@@ -9,8 +9,11 @@ from openpyxl.reader.excel import load_workbook
 from custom_back_end.teggydb import WaferVolume
 
 
-def parse_tsmc_export_to_wafer_volumes(tsmc_export_path: Path):
-    """Function to extract data from a TSMC wafer report and add it to the Teggy DB (WaferVolume table)."""
+def parse_tsmc_export_to_wafer_volumes(tsmc_export_path: Path) -> list:
+    """Function to extract data from a TSMC wafer report and add it to the Teggy DB (WaferVolume table).
+
+    Returns the new WaferVolume entries added to the database.
+    """
 
     # determine export date:
     file_name = tsmc_export_path.name
@@ -53,24 +56,29 @@ def parse_tsmc_export_to_wafer_volumes(tsmc_export_path: Path):
                     volume_production_coordinates = (row_nr, col_nr)
     # print(ip_name_coordinates, ip_version_coordinates, volume_production_coordinates)
 
-    # creating unique SimpleWaverVolumes:
+    # creating unique WaverVolumes:
     wafervolumes = set()
     for row_nr in range(ip_name_coordinates[0] + 1, sheet.max_row + 1):
         ip_name = sheet.cell(row_nr, ip_name_coordinates[1]).value
         ip_version = sheet.cell(row_nr, ip_version_coordinates[1]).value
-        volume_production_str = sheet.cell(row_nr, volume_production_coordinates[1]).value
-        splits = volume_production_str.replace(" ", "").split("/")
-        tapeouts = int(splits[0])
-        wafers = int(splits[1])
+        if not None in (ip_name, ip_version):
+            volume_production_str = sheet.cell(row_nr, volume_production_coordinates[1]).value
+            splits = volume_production_str.replace(" ", "").split("/")
+            tapeouts = int(splits[0])
+            wafers = int(splits[1])
 
-        wv = WaferVolume(export_date, ip_name, ip_version, tapeouts, wafers)
-        wafervolumes.add(wv)
+            wv = WaferVolume(export_date, ip_name, ip_version, tapeouts, wafers)
+            wafervolumes.add(wv)
     # print(len(wafervolumes))
 
-    # Save the unique wafervolumes to the database
+    # Saving WaferVolumes to the database
+    newly_added_wvs = []
     for wv in wafervolumes:
-        wv.save_to_db_if_not_present()
+        new = wv.save_to_db_if_not_present()
+        if new:
+            newly_added_wvs.append(wv)
 
+    return newly_added_wvs
 
 def one_time_tsmc_wafer_history_import(tsmc_wafer_followup_path: Path):
     """This function imports historical TSMC wafer data from Bart K's WaferFollowUp.xlsx to the Teggy DB."""

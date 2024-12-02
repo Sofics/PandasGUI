@@ -9,7 +9,7 @@ import pandas as pd
 import pkg_resources
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 import pandasgui
 from custom_back_end.parse_tsmc_export import parse_tsmc_export_to_wafer_volumes
@@ -417,13 +417,25 @@ class PandasGui(QtWidgets.QMainWindow):
         dialog.show()
 
     def import_new_tsmc_excel(self):
-        # TODO with the 20241001 example, the data got messed up ???
-        # TODO print / output how many were actually added to the database?
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')
         if file_path:
-            parse_tsmc_export_to_wafer_volumes(Path(file_path))
-
-        # TODO reload the wafer volumes / restart the DataViewer
+            try:
+                new_db_wafervolumes = parse_tsmc_export_to_wafer_volumes(Path(file_path))
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Import failed!")
+                msg.setText(f"Import failed, error message:\n{str(e)}")
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+            else:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Information)
+                msg.setWindowTitle("Import successful")
+                msg.setText(f"Import successful:\nImported {len(new_db_wafervolumes)} new WaferVolume(s)")
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+                # TODO reload the wafer volumes / restart the DataViewer
 
     def show_sample_datasets(self):
         from pandasgui.datasets import LOCAL_DATASET_DIR
