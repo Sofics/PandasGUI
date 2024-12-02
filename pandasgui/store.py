@@ -900,7 +900,7 @@ class PandasGuiStore:
                 'customer.str.contains("nordic", case=False, na=False)',
                 'node == "55nm"',
                 'technology == "FinFET"',
-                'date > "2024-09-30"',
+                'date > "2022-10-01"',
             ]
             for expr in standard_filter_expressions:
                 self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))
