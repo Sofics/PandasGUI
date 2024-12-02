@@ -3,7 +3,9 @@ from pathlib import Path
 
 from sqlalchemy import create_engine
 
-import cfg
+import custom_back_end.cfg
+
+from custom_back_end.teggydb import TEGGY_ENGINE
 from pandasgui import show
 import pandas as pd
 
@@ -11,12 +13,6 @@ import pandas as pd
 def main():
     try:
         # TODO some kind of loading bar / progress dlg?
-
-        TEGGY_ENGINE = create_engine(
-            f"mysql+pymysql://{cfg.TeggyDB.username}:{cfg.TeggyDB.password}@{cfg.TeggyDB.host}/{cfg.TeggyDB.name}",
-            pool_recycle=3600,
-            # echo=True,  # to see sql execution
-        )
 
         timestamp = time.time()
 

@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 import pandasgui
 from custom_back_end.parse_tsmc_export import parse_tsmc_export_to_wafer_volumes
+from custom_back_end.teggydb import TEGGY_ENGINE
 from pandasgui.store import PandasGuiStore
 from pandasgui.utility import as_dict, fix_ipython, get_figure_type, resize_widget
 from pandasgui.widgets.find_toolbar import FindToolbar
@@ -432,10 +433,16 @@ class PandasGui(QtWidgets.QMainWindow):
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Information)
                 msg.setWindowTitle("Import successful")
-                msg.setText(f"Import successful:\nImported {len(new_db_wafervolumes)} new WaferVolume(s)")
+                msg.setText(f"Import successful:\n"f"Imported {len(new_db_wafervolumes)} new WaferVolume(s)\n")
                 msg.setStandardButtons(QMessageBox.Ok)
                 msg.exec_()
-                # TODO reload the wafer volumes / restart the DataViewer
+
+                # re-query the WaferVolumes, and replace the dataframe with the new one:
+                self.store.remove_dataframe("Wafer volumes")
+                wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
+                wafer_volumes["date"] = pd.to_datetime(wafer_volumes["date"], errors="coerce")
+                self.store.add_dataframe(wafer_volumes, "Wafer volumes")
+                # Note: UI seems to be completely fine after redoing query and re-adding dataframe
 
     def show_sample_datasets(self):
         from pandasgui.datasets import LOCAL_DATASET_DIR
