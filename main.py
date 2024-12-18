@@ -25,6 +25,8 @@ def main():
 
         # transform None -> NaT, so comparison in GUI query expressions works:
         all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
+        # Turn metrics into strings => no comma and more readable (NaN => "")
+        all_delived_cells["metric"] = all_delived_cells["metric"].apply(lambda x: f"{int(x)}" if pd.notna(x) else "")
 
         # WaferVolume <-> request BK
         # for how this view got created, see bottom of this file
