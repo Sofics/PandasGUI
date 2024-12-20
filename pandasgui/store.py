@@ -896,7 +896,8 @@ class PandasGuiStore:
         elif name == "Wafer volumes" and len(self.selected_pgdf.filters) == 0:
             standard_filter_expressions = [
                 'new_wafers > 0',
-                'ip_name == "SOFICS_TSMC_N65LP_ESD_1V2" and ip_version == "1.0"',
+                'ip_name == "SOFICS_TSMC_N65LP_ESD_1V2"',
+                'ip_version == "1.0"',
                 'customer.str.contains("nordic", case=False, na=False)',
                 'node == "55nm"',
                 'technology == "FinFET"',
