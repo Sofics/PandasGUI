@@ -236,7 +236,7 @@ class PandasGui(QtWidgets.QMainWindow):
                  #           ]
                  '(Re)load': [MenuItem(name='Delivered cells', func=self.load_and_select_delivered_cells),
                               MenuItem(name='Wafer volumes', func=self.load_and_select_wafer_volumes),
-                              MenuItem(name='Last v. delivered cells', func=self.load_and_select_last_delivered_cells),
+                              MenuItem(name='Last metric delivered cells', func=self.load_and_select_last_metric_delivered_cells),
                                   ],
                  'Wafer volume': [MenuItem(name='Import new TSMC Excel', func=self.import_new_tsmc_excel),
                            ]
@@ -442,8 +442,14 @@ class PandasGui(QtWidgets.QMainWindow):
 
         self.store.add_dataframe(wafer_volumes, "Wafer volumes")
 
-    def load_and_select_last_delivered_cells(self):
-        pass
+    def load_and_select_last_metric_delivered_cells(self):
+        # (re)make the last delivered cells, and replace the dataframe with the new one:
+        self.store.remove_dataframe("Last metric delivered cells")
+        del_cells = self.store.get_dataframes("Delivered cells")
+        last_version_cells = del_cells.loc[del_cells.groupby(["name", "tag"])["metric"].idxmax()].copy(deep=True)
+        last_version_cells = last_version_cells.sort_values(by="metric", ascending=False)
+
+        self.store.add_dataframe(last_version_cells, "Last metric delivered cells")
 
     def import_new_tsmc_excel(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')

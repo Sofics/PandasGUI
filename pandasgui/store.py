@@ -875,7 +875,7 @@ class PandasGuiStore:
         pgdf = self.data[name]
         self.gui.stacked_widget.setCurrentWidget(pgdf.pg_widget())
         self.selected_pgdf = pgdf
-        if name == "Delivered cells" and len(self.selected_pgdf.filters) == 0:
+        if (name == "Delivered cells" or name == "Last metric delivered cells") and len(self.selected_pgdf.filters) == 0:
             standard_filter_expressions = [
                 'customer.str.contains("nordic", case=False, na=False)',
                 'project_nr == "CPA259"',
