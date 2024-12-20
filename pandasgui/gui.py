@@ -423,7 +423,6 @@ class PandasGui(QtWidgets.QMainWindow):
 
     def load_and_select_delivered_cells(self):
         # (re)query the delivered cells, and replace the dataframe with the new one:
-        self.store.remove_dataframe("Delivered cells")
 
         all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
         # transform None -> NaT, so comparison in GUI query expressions works:
@@ -431,25 +430,38 @@ class PandasGui(QtWidgets.QMainWindow):
         # Turn metrics into strings => no comma and more readable (NaN => "")
         all_delived_cells["metric"] = all_delived_cells["metric"].apply(lambda x: f"{int(x)}" if pd.notna(x) else "")
 
-        self.store.add_dataframe(all_delived_cells, "Delivered cells")
+        self.store.select_pgdf("Delivered cells")
+
+        self.store.data["Delivered cells"].df = all_delived_cells
+        self.store.data["Delivered cells"].df_unfiltered = all_delived_cells
+        self.store.data["Delivered cells"].data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        self.store.data["Delivered cells"].apply_filters()
 
     def load_and_select_wafer_volumes(self):
         # (re)query the WaferVolumes, and replace the dataframe with the new one:
-        self.store.remove_dataframe("Wafer volumes")
 
         wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
         wafer_volumes["date"] = pd.to_datetime(wafer_volumes["date"], errors="coerce")
 
-        self.store.add_dataframe(wafer_volumes, "Wafer volumes")
+        self.store.select_pgdf("Wafer volumes")
+
+        self.store.data["Wafer volumes"].df = wafer_volumes
+        self.store.data["Wafer volumes"].df_unfiltered = wafer_volumes
+        self.store.data["Wafer volumes"].data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        self.store.data["Wafer volumes"].apply_filters()
 
     def load_and_select_last_metric_delivered_cells(self):
         # (re)make the last delivered cells, and replace the dataframe with the new one:
-        self.store.remove_dataframe("Last metric delivered cells")
         del_cells = self.store.get_dataframes("Delivered cells")
-        last_version_cells = del_cells.loc[del_cells.groupby(["name", "tag"])["metric"].idxmax()].copy(deep=True)
-        last_version_cells = last_version_cells.sort_values(by="metric", ascending=False)
+        last_metric_delivered_cells = del_cells.loc[del_cells.groupby(["name", "tag"])["metric"].idxmax()].copy(deep=True)
+        last_metric_delivered_cells = last_metric_delivered_cells.sort_values(by="metric", ascending=False)
 
-        self.store.add_dataframe(last_version_cells, "Last metric delivered cells")
+        self.store.select_pgdf("Last metric delivered cells")
+
+        self.store.data["Last metric delivered cells"].df = last_metric_delivered_cells
+        self.store.data["Last metric delivered cells"].df_unfiltered = last_metric_delivered_cells
+        self.store.data["Last metric delivered cells"].data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        self.store.data["Last metric delivered cells"].apply_filters()
 
     def import_new_tsmc_excel(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')
@@ -472,11 +484,7 @@ class PandasGui(QtWidgets.QMainWindow):
                 msg.exec_()
 
                 # re-query the WaferVolumes, and replace the dataframe with the new one:
-                self.store.remove_dataframe("Wafer volumes")
-                wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
-                wafer_volumes["date"] = pd.to_datetime(wafer_volumes["date"], errors="coerce")
-                self.store.add_dataframe(wafer_volumes, "Wafer volumes")
-                # Note: UI seems to be completely fine after redoing query and re-adding dataframe
+                self.load_and_select_wafer_volumes()
 
     def show_sample_datasets(self):
         from pandasgui.datasets import LOCAL_DATASET_DIR
