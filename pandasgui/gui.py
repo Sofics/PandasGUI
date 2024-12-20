@@ -432,10 +432,16 @@ class PandasGui(QtWidgets.QMainWindow):
 
         self.store.select_pgdf("Delivered cells")
 
-        self.store.data["Delivered cells"].df = all_delived_cells
-        self.store.data["Delivered cells"].df_unfiltered = all_delived_cells
-        self.store.data["Delivered cells"].data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
-        self.store.data["Delivered cells"].apply_filters()
+        pgdf = self.store.data["Delivered cells"]
+        pgdf.df = all_delived_cells
+        pgdf.df_unfiltered = all_delived_cells
+        pgdf.data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        pgdf.apply_filters()
+
+        # update shape in nav + select the nav item
+        shape = pgdf.df_unfiltered.shape
+        shape = f"{shape[0]:,} x {shape[1]:,}"
+        find_and_update_item_in_the_navigator(self.navigator, "Delivered cells", shape)
 
     def load_and_select_wafer_volumes(self):
         # (re)query the WaferVolumes, and replace the dataframe with the new one:
@@ -445,23 +451,35 @@ class PandasGui(QtWidgets.QMainWindow):
 
         self.store.select_pgdf("Wafer volumes")
 
-        self.store.data["Wafer volumes"].df = wafer_volumes
-        self.store.data["Wafer volumes"].df_unfiltered = wafer_volumes
-        self.store.data["Wafer volumes"].data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
-        self.store.data["Wafer volumes"].apply_filters()
+        pgdf = self.store.data["Wafer volumes"]
+        pgdf.df = wafer_volumes
+        pgdf.df_unfiltered = wafer_volumes
+        pgdf.data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        pgdf.apply_filters()
+
+        # update shape in nav + select the nav item
+        shape = pgdf.df_unfiltered.shape
+        shape = f"{shape[0]:,} x {shape[1]:,}"
+        find_and_update_item_in_the_navigator(self.navigator, "Wafer volumes", shape)
 
     def load_and_select_last_metric_delivered_cells(self):
         # (re)make the last delivered cells, and replace the dataframe with the new one:
-        del_cells = self.store.get_dataframes("Delivered cells")
-        last_metric_delivered_cells = del_cells.loc[del_cells.groupby(["name", "tag"])["metric"].idxmax()].copy(deep=True)
+        deliv_cells = self.store.data["Delivered cells"].df_unfiltered
+        last_metric_delivered_cells = deliv_cells.loc[deliv_cells.groupby(["name", "tag"])["metric"].idxmax()].copy(deep=True)
         last_metric_delivered_cells = last_metric_delivered_cells.sort_values(by="metric", ascending=False)
 
         self.store.select_pgdf("Last metric delivered cells")
 
-        self.store.data["Last metric delivered cells"].df = last_metric_delivered_cells
-        self.store.data["Last metric delivered cells"].df_unfiltered = last_metric_delivered_cells
-        self.store.data["Last metric delivered cells"].data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
-        self.store.data["Last metric delivered cells"].apply_filters()
+        pgdf = self.store.data["Last metric delivered cells"]
+        pgdf.df = last_metric_delivered_cells
+        pgdf.df_unfiltered = last_metric_delivered_cells
+        pgdf.data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        pgdf.apply_filters()
+
+        # update shape in nav + select the nav item
+        shape = pgdf.df_unfiltered.shape
+        shape = f"{shape[0]:,} x {shape[1]:,}"
+        find_and_update_item_in_the_navigator(self.navigator, "Last metric delivered cells", shape)
 
     def import_new_tsmc_excel(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')
@@ -511,6 +529,32 @@ class PandasGui(QtWidgets.QMainWindow):
             print("No matching DataFrames found to reload")
         else:
             print(f"Refreshed {', '.join(refreshed_names)}")
+
+
+def find_and_update_item_in_the_navigator(navigator, name_prefix, new_shape):
+    # Remark: also selects the item after updating it
+    # Iterate through all top-level items
+    for i in range(navigator.topLevelItemCount()):
+        top_item = navigator.topLevelItem(i)
+        # Recursively search for the item that matches the prefix
+        found_item = search_item_by_prefix(top_item, name_prefix)
+        if found_item:
+            # Update the shape in the second column
+            found_item.setText(1, new_shape)
+            navigator.setCurrentItem(found_item)  # select the found and updated item
+            break  # Stop once the first match is found
+
+
+def search_item_by_prefix(item, name_prefix):
+    # Check if the item's name starts with the given prefix (first column)
+    if item.text(0).startswith(name_prefix):
+        return item
+    # Recursively search child items
+    for i in range(item.childCount()):
+        found_item = search_item_by_prefix(item.child(i), name_prefix)
+        if found_item:
+            return found_item
+    return None
 
 
 def show(*args,
