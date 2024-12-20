@@ -19,24 +19,19 @@ def main():
         # For how this view got created, see bottom of this file
         all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
 
-        # TODO make dataframe that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"
-        # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
-        # tsmc_cells_for_ip_registry = None
-
         # transform None -> NaT, so comparison in GUI query expressions works:
         all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
         # Turn metrics into strings => no comma and more readable (NaN => "")
         all_delived_cells["metric"] = all_delived_cells["metric"].apply(lambda x: f"{int(x)}" if pd.notna(x) else "")
 
-        # WaferVolume <-> request BK
-        # for how this view got created, see bottom of this file
-        wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
-        wafer_volumes["date"] = pd.to_datetime(wafer_volumes["date"], errors="coerce")
-
+        # Note: start with delivered cells loaded and others empty until desired differently
         named_dataframes = {
             "Delivered cells": all_delived_cells,
-            "Wafer volumes": wafer_volumes,
+            "Wafer volumes": pd.DataFrame(),
+            "Last v. delivered cells": pd.DataFrame(),  # show latest metrics only
             # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
+            # that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"
+            # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
         }
 
         print(f"DB and DF stuff took {time.time() - timestamp} seconds.")

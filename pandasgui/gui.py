@@ -234,6 +234,10 @@ class PandasGui(QtWidgets.QMainWindow):
                  #           MenuItem(name='View DataFrame History',
                  #                    func=self.view_history),
                  #           ]
+                 '(Re)load': [MenuItem(name='Delivered cells', func=self.load_and_select_delivered_cells),
+                              MenuItem(name='Wafer volumes', func=self.load_and_select_wafer_volumes),
+                              MenuItem(name='Last v. delivered cells', func=self.load_and_select_last_delivered_cells),
+                                  ],
                  'Wafer volume': [MenuItem(name='Import new TSMC Excel', func=self.import_new_tsmc_excel),
                            ]
                  }
@@ -416,6 +420,30 @@ class PandasGui(QtWidgets.QMainWindow):
         # dialog.resize(500, 500)
         dialog.setWindowTitle("About")
         dialog.show()
+
+    def load_and_select_delivered_cells(self):
+        # (re)query the delivered cells, and replace the dataframe with the new one:
+        self.store.remove_dataframe("Delivered cells")
+
+        all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
+        # transform None -> NaT, so comparison in GUI query expressions works:
+        all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
+        # Turn metrics into strings => no comma and more readable (NaN => "")
+        all_delived_cells["metric"] = all_delived_cells["metric"].apply(lambda x: f"{int(x)}" if pd.notna(x) else "")
+
+        self.store.add_dataframe(all_delived_cells, "Delivered cells")
+
+    def load_and_select_wafer_volumes(self):
+        # (re)query the WaferVolumes, and replace the dataframe with the new one:
+        self.store.remove_dataframe("Wafer volumes")
+
+        wafer_volumes = pd.read_sql_query("""select * from DetailedWaferVolume;""", TEGGY_ENGINE)
+        wafer_volumes["date"] = pd.to_datetime(wafer_volumes["date"], errors="coerce")
+
+        self.store.add_dataframe(wafer_volumes, "Wafer volumes")
+
+    def load_and_select_last_delivered_cells(self):
+        pass
 
     def import_new_tsmc_excel(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')
