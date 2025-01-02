@@ -27,8 +27,9 @@ def main():
         # Note: start with delivered cells loaded and others empty until desired differently
         named_dataframes = {
             "Delivered cells": all_delived_cells,
-            "Wafer volumes": pd.DataFrame(),
-            "Last metric delivered cells": pd.DataFrame(),  # show latest metrics only
+            # Note: filling other DF's with just 1 row so that the fields are set correctly for graphs
+            "Wafer volumes": pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE),
+            "Last metric delivered cells": all_delived_cells.iloc[:1].copy(),  # show latest metrics only
             # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
             # that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"
             # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
