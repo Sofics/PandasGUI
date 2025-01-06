@@ -9,7 +9,7 @@ class PysharkDB:
     username = "tcuser"
     password = b64decode(passwords.pysharkdb).decode("utf-8")
     name = "testchipdb"
-    host = "10.31.13.30"
+    host = "10.31.13.14"
     port = 3306
 
 
@@ -25,7 +25,7 @@ class TeggyDB:
     username = "tcuser"
     password = b64decode(passwords.teggydb).decode("utf-8")
     name = "Teggy"
-    host = "10.31.13.30"
+    host = "10.31.13.14"
     port = 3306
 
 
