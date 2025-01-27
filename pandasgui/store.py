@@ -877,7 +877,7 @@ class PandasGuiStore:
         self.selected_pgdf = pgdf
         if (name == "Delivered cells" or name == "Last metric delivered cells") and len(self.selected_pgdf.filters) == 0:
             standard_filter_expressions = [
-                'customer.str.contains("nordic", case=False, na=False)',
+                'customers.str.contains("nordic", case=False, na=False)',
                 'project_nr == "CPA259"',
                 'project_lead == "HM"',
                 'delivery_date > "2024-10-1"',
@@ -899,7 +899,7 @@ class PandasGuiStore:
                 'new_wafers > 0',
                 'ip_name == "SOFICS_TSMC_N65LP_ESD_1V2"',
                 'ip_version == "1.0"',
-                'customer.str.contains("nordic", case=False, na=False)',
+                'customers.str.contains("nordic", case=False, na=False)',
                 'node == "55nm"',
                 'technology == "FinFET"',
                 'date >= "2023-01-01"',
