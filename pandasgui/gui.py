@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 import pandasgui
+from custom_back_end.opensharknetdb import OPENSHARKNET_ENGINE
 from custom_back_end.parse_tsmc_export import parse_tsmc_export_to_wafer_volumes
 from custom_back_end.teggydb import TEGGY_ENGINE
 from pandasgui.store import PandasGuiStore
@@ -237,6 +238,7 @@ class PandasGui(QtWidgets.QMainWindow):
                  '(Re)load': [MenuItem(name='Delivered cells', func=self.load_and_select_delivered_cells),
                               MenuItem(name='Wafer volumes', func=self.load_and_select_wafer_volumes),
                               MenuItem(name='Last metric delivered cells', func=self.load_and_select_last_metric_delivered_cells),
+                              MenuItem(name='ID2IP', func=self.load_and_select_id2ip),
                                   ],
                  'Wafer volume': [MenuItem(name='Import new TSMC Excel', func=self.import_new_tsmc_excel),
                            ]
@@ -480,6 +482,45 @@ class PandasGui(QtWidgets.QMainWindow):
         shape = pgdf.df_unfiltered.shape
         shape = f"{shape[0]:,} x {shape[1]:,}"
         find_and_update_item_in_the_navigator(self.navigator, "Last metric delivered cells", shape)
+
+    def load_and_select_id2ip(self):
+        id2ip_statuses = pd.read_sql_query("select type_id, type, nr, title, date, newstatus as status from id2ip2statushistory;", OPENSHARKNET_ENGINE)
+        id2ip_statuses["date"] = pd.to_datetime(id2ip_statuses["date"], errors="coerce")
+
+        # TODO expand the DF so that each idea has a row for each day from it's first appeareance until today
+        # type_id seems to be the id of the idea
+        id2ip_statuses = id2ip_statuses.sort_values(by=["type_id", "date"])
+        id2ip_statuses["next_date"] = id2ip_statuses.groupby("type_id")["date"].shift(-1)
+        # If no next date, then today is the cutoff
+        id2ip_statuses["next_date"] = id2ip_statuses["next_date"].fillna(pd.to_datetime("today").normalize())
+
+        # Function to expand rows into daily entries
+        def expand_row(id2ip_row):
+            date_range = pd.date_range(start=id2ip_row["date"], end=id2ip_row["next_date"] - pd.Timedelta(days=1))
+            expanded_rows = [row.drop(["date", "next_date"]).to_dict() | {"date": single_date} for single_date in
+                             date_range]
+            return expanded_rows
+
+        # Create new dataframe
+        expanded_rows = []
+        for _, row in id2ip_statuses.iterrows():
+            expanded_rows.extend(expand_row(row))
+        id2ip_daily_statuses = pd.DataFrame(expanded_rows)
+
+        id2ip_daily_statuses = id2ip_daily_statuses.sort_values(by=["date"])
+
+        self.store.select_pgdf("id2ip")
+
+        pgdf = self.store.data["id2ip"]
+        pgdf.df = id2ip_daily_statuses
+        pgdf.df_unfiltered = id2ip_daily_statuses
+        pgdf.data_changed()  # note, hase self.refresh_ui and refresh_statistics in it
+        pgdf.apply_filters()
+
+        # update shape in nav + select the nav item
+        shape = pgdf.df_unfiltered.shape
+        shape = f"{shape[0]:,} x {shape[1]:,}"
+        find_and_update_item_in_the_navigator(self.navigator, "id2ip", shape)
 
     def import_new_tsmc_excel(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select the new TSMC Excel')
