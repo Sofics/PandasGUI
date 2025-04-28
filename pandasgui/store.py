@@ -908,6 +908,18 @@ class PandasGuiStore:
                 self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))
             self.selected_pgdf.refresh_ui()  # to update Filters area in GUI
 
+        elif name == "id2ip" and len(self.selected_pgdf.filters) == 0:
+            standard_filter_expressions = [
+                'date > "2022-03-01"',
+                'type_id == 1247 and type == "TechnicalInformation"',
+                'status == "PATENTED"',
+                'nr.str.contains("T", case=True, na=False)',
+                'nr.str.contains("P", case=True, na=False)',
+            ]
+            for expr in standard_filter_expressions:
+                self.selected_pgdf.filters.append(Filter(expr=expr, enabled=False, failed=False))
+            self.selected_pgdf.refresh_ui()  # to update Filters area in GUI
+
     def to_dict(self):
         import json
         return json.loads(json.dumps(self, default=lambda o: o.__dict__))

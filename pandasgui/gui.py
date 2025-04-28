@@ -484,17 +484,17 @@ class PandasGui(QtWidgets.QMainWindow):
         find_and_update_item_in_the_navigator(self.navigator, "Last metric delivered cells", shape)
 
     def load_and_select_id2ip(self):
-        TODAY = pd.to_datetime("today").normalize()
+        TOMORROW = pd.to_datetime("today").normalize() + pd.Timedelta(days=1)
 
         id2ip_statuses = pd.read_sql_query(
-            """select type_id, type, nr, title, date, newstatus as status from id2ip2statushistory;""",
+            """select type_id, type, nr, date, newstatus as status from id2ip2statushistory;""",
             OPENSHARKNET_ENGINE
         )
         id2ip_statuses["date"] = pd.to_datetime(id2ip_statuses["date"], errors="coerce")
         id2ip_statuses = id2ip_statuses.sort_values(by=["type_id", "date"])
 
         id2ip_statuses["next_date"] = id2ip_statuses.groupby("type_id")["date"].shift(-1)
-        id2ip_statuses["next_date"] = id2ip_statuses["next_date"].fillna(TODAY)
+        id2ip_statuses["next_date"] = id2ip_statuses["next_date"].fillna(TOMORROW)
         id2ip_statuses["n_days"] = (id2ip_statuses["next_date"] - id2ip_statuses["date"]).dt.days
 
         # Repeat rows
