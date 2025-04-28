@@ -484,30 +484,27 @@ class PandasGui(QtWidgets.QMainWindow):
         find_and_update_item_in_the_navigator(self.navigator, "Last metric delivered cells", shape)
 
     def load_and_select_id2ip(self):
-        id2ip_statuses = pd.read_sql_query("select type_id, type, nr, title, date, newstatus as status from id2ip2statushistory;", OPENSHARKNET_ENGINE)
+        TODAY = pd.to_datetime("today").normalize()
+
+        id2ip_statuses = pd.read_sql_query(
+            """select type_id, type, nr, title, date, newstatus as status from id2ip2statushistory;""",
+            OPENSHARKNET_ENGINE
+        )
         id2ip_statuses["date"] = pd.to_datetime(id2ip_statuses["date"], errors="coerce")
-
-        # TODO expand the DF so that each idea has a row for each day from it's first appeareance until today
-        # type_id seems to be the id of the idea
         id2ip_statuses = id2ip_statuses.sort_values(by=["type_id", "date"])
+
         id2ip_statuses["next_date"] = id2ip_statuses.groupby("type_id")["date"].shift(-1)
-        # If no next date, then today is the cutoff
-        id2ip_statuses["next_date"] = id2ip_statuses["next_date"].fillna(pd.to_datetime("today").normalize())
+        id2ip_statuses["next_date"] = id2ip_statuses["next_date"].fillna(TODAY)
+        id2ip_statuses["n_days"] = (id2ip_statuses["next_date"] - id2ip_statuses["date"]).dt.days
 
-        # Function to expand rows into daily entries
-        def expand_row(id2ip_row):
-            date_range = pd.date_range(start=id2ip_row["date"], end=id2ip_row["next_date"] - pd.Timedelta(days=1))
-            expanded_rows = [row.drop(["date", "next_date"]).to_dict() | {"date": single_date} for single_date in
-                             date_range]
-            return expanded_rows
+        # Repeat rows
+        repeated_rows = id2ip_statuses.loc[id2ip_statuses.index.repeat(id2ip_statuses["n_days"])].copy()
+        repeated_rows["day_offset"] = repeated_rows.groupby(level=0).cumcount()
+        repeated_rows["date"] = repeated_rows["date"] + pd.to_timedelta(repeated_rows["day_offset"], unit="d")
 
-        # Create new dataframe
-        expanded_rows = []
-        for _, row in id2ip_statuses.iterrows():
-            expanded_rows.extend(expand_row(row))
-        id2ip_daily_statuses = pd.DataFrame(expanded_rows)
-
-        id2ip_daily_statuses = id2ip_daily_statuses.sort_values(by=["date"])
+        # Drop helper columns
+        id2ip_daily_statuses = repeated_rows.drop(columns=["next_date", "n_days", "day_offset"]).sort_values(
+            by=["date"], ascending=False)
 
         self.store.select_pgdf("id2ip")
 
