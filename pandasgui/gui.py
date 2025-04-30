@@ -238,7 +238,7 @@ class PandasGui(QtWidgets.QMainWindow):
                  '(Re)load': [MenuItem(name='Delivered cells', func=self.load_and_select_delivered_cells),
                               MenuItem(name='Wafer volumes', func=self.load_and_select_wafer_volumes),
                               MenuItem(name='Last metric delivered cells', func=self.load_and_select_last_metric_delivered_cells),
-                              MenuItem(name='ID2IP', func=self.load_and_select_id2ip),
+                              MenuItem(name='Daily ID2IP', func=self.load_and_select_id2ip),
                                   ],
                  'Wafer volume': [MenuItem(name='Import new TSMC Excel', func=self.import_new_tsmc_excel),
                            ]
@@ -491,9 +491,9 @@ class PandasGui(QtWidgets.QMainWindow):
             OPENSHARKNET_ENGINE
         )
         id2ip_statuses["date"] = pd.to_datetime(id2ip_statuses["date"], errors="coerce")
-        id2ip_statuses = id2ip_statuses.sort_values(by=["type_id", "date"])
+        id2ip_statuses = id2ip_statuses.sort_values(by=["type", "type_id", "date"])
 
-        id2ip_statuses["next_date"] = id2ip_statuses.groupby("type_id")["date"].shift(-1)
+        id2ip_statuses["next_date"] = id2ip_statuses.groupby(["type", "type_id"])["date"].shift(-1)
         id2ip_statuses["next_date"] = id2ip_statuses["next_date"].fillna(TOMORROW)
         id2ip_statuses["n_days"] = (id2ip_statuses["next_date"] - id2ip_statuses["date"]).dt.days
 
