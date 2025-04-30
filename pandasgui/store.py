@@ -910,6 +910,7 @@ class PandasGuiStore:
 
         elif name == "id2ip" and len(self.selected_pgdf.filters) == 0:
             standard_filter_expressions = [
+                f'date == "{datetime.today().strftime("%Y-%m-%d")}"',
                 'date > "2022-03-01"',
                 'type == "TechnicalInformation"',
                 'type_id == 1247 and type == "TechnicalInformation"',
