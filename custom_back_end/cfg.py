@@ -24,7 +24,7 @@ class OpenSharknetDB:
 class TeggyDB:
     username = "tcuser"
     password = b64decode(passwords.teggydb).decode("utf-8")
-    name = "Teggy"
+    name = "TeggyDB"
     host = "10.31.13.14"
     port = 3306
 
