@@ -16,8 +16,8 @@ class PysharkDB:
 class OpenSharknetDB:
     username = "opensharknetltd"
     password = b64decode(passwords.opensharknetdb).decode("utf-8")
-    name = "opensharknet"
-    host = "10.31.13.31"
+    name = "sharknet4db"  # database
+    host = "10.31.13.14"
     port = 3306
 
 

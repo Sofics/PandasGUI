@@ -2,6 +2,8 @@ from sqlalchemy import create_engine
 
 from custom_back_end import cfg
 
+# NOTE: was only needed for gui.py "Daily ID2IP", which is currently commented out
+
 OPENSHARKNET_ENGINE = create_engine(
     f"mysql+pymysql://{cfg.OpenSharknetDB.username}:{cfg.OpenSharknetDB.password}@{cfg.OpenSharknetDB.host}/{cfg.OpenSharknetDB.name}",
     pool_recycle=3600,
