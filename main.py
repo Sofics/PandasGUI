@@ -1,31 +1,13 @@
 import time
-from pathlib import Path
-
-from sqlalchemy import create_engine
-
-import custom_back_end.cfg
 
 from custom_back_end.teggydb import TEGGY_ENGINE
 from custom_back_end.opensharknetdb import OPENSHARKNET_ENGINE
 from pandasgui import show
 import pandas as pd
 
-
-MISSING_REGISTERED_DELIVERED_CELLS_QUERY = """
-SELECT *
+EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG = """
+SELECT cc.nr, cc.name, cc.tapeoutdate, cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
 FROM cellcollection cc
-LEFT JOIN (
-    SELECT DISTINCT tag
-    FROM AllDeliveredCells
-) adc ON cc.nr = adc.tag
-WHERE cc.nr NOT LIKE '%%CC%%'
-  AND adc.tag IS NULL
-  AND cc.name NOT REGEXP 'training|test|demo|mylittle'
-  AND NOT (
-      cc.nr REGEXP '^TC[0-9]{3}[a-z]?$'
-      AND CAST(SUBSTRING(cc.nr, 3, 3) AS UNSIGNED) < 173
-  )
-ORDER BY cc.nr
 LIMIT 1;
 """
 
@@ -50,7 +32,7 @@ def main():
             # Note: filling other DF's with just 1 row so that the fields are set correctly for graphs
             "Wafer volumes": pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE),
             "Last metric delivered cells": all_delived_cells.iloc[:1].copy(),  # show latest metrics only
-            "Missing registered delivered cells": pd.read_sql_query(MISSING_REGISTERED_DELIVERED_CELLS_QUERY, TEGGY_ENGINE),
+            "Missing registered delivered cells": pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE),
             "id2ip": pd.read_sql_query("select type_id, type, nr, date, newstatus as status from id2ip2statushistory limit 1;", OPENSHARKNET_ENGINE),
             # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
             # that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"

@@ -35,8 +35,8 @@ except Exception as exc:
     logger.warning("qtstylish is unavailable; falling back to the classic theme. %s", exc)
 
 
-UNDELIVERED_CELLS_QUERY = """
-SELECT *
+MISSING_REGISTERED_DELIVERED_CELLS_QUERY = """
+SELECT cc.nr, cc.name, cc.tapeoutdate, cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
 FROM cellcollection cc
 LEFT JOIN (
     SELECT DISTINCT tag
@@ -49,7 +49,7 @@ WHERE cc.nr NOT LIKE '%%CC%%'
       cc.nr REGEXP '^TC[0-9]{3}[a-z]?$'
       AND CAST(SUBSTRING(cc.nr, 3, 3) AS UNSIGNED) < 173
   )
-ORDER BY cc.nr;
+ORDER BY cc.tapeoutdate DESC;
 """
 
 
@@ -515,14 +515,14 @@ class PandasGui(QtWidgets.QMainWindow):
         find_and_update_item_in_the_navigator(self.navigator, "Last metric delivered cells", shape)
 
     def load_and_select_missing_registered_delivered_cells(self):
-        # (re)query cellcollection entries that have not been delivered yet.
-        undelivered_cells = pd.read_sql_query(UNDELIVERED_CELLS_QUERY, TEGGY_ENGINE)
+        # (re)query cellcollection entries that have no registered delivered cells yet.
+        cellcollections_missing_registry = pd.read_sql_query(MISSING_REGISTERED_DELIVERED_CELLS_QUERY, TEGGY_ENGINE)
 
         self.store.select_pgdf("Missing registered delivered cells")
 
         pgdf = self.store.data["Missing registered delivered cells"]
-        pgdf.df = undelivered_cells
-        pgdf.df_unfiltered = undelivered_cells
+        pgdf.df = cellcollections_missing_registry
+        pgdf.df_unfiltered = cellcollections_missing_registry
         pgdf.data_changed()  # note, has self.refresh_ui and refresh_statistics in it
         pgdf.apply_filters()
 
