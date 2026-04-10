@@ -89,6 +89,10 @@ class FigureViewer(PyQt5.QtWebEngineWidgets.QWebEngineView, PandasGuiStoreItem):
         else:
             raise TypeError
 
+        # Older QtWebEngine/Chromium builds used by PyQt5 can fail to parse
+        # Plotly's newer :focus-visible selector and abort script execution.
+        html = html.replace(":focus-visible", ":focus")
+
         html = html.replace("<style>",
                      "<style>"
                      "body{margin: 0; width:100vw; height:100vh;} "
