@@ -530,6 +530,7 @@ class PandasGui(QtWidgets.QMainWindow):
         shape = pgdf.df_unfiltered.shape
         shape = f"{shape[0]:,} x {shape[1]:,}"
         find_and_update_item_in_the_navigator(self.navigator, "Missing registered delivered cells", shape)
+        self.auto_size_pgdf_columns(pgdf)
 
     def load_and_select_id2ip(self):
         TOMORROW = pd.to_datetime("today").normalize() + pd.Timedelta(days=1)
@@ -598,6 +599,14 @@ class PandasGui(QtWidgets.QMainWindow):
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         refs.remove(self)
         super().closeEvent(e)
+
+    def auto_size_pgdf_columns(self, pgdf):
+        dataframe_viewer = getattr(pgdf, "dataframe_viewer", None)
+        if dataframe_viewer is None:
+            return
+
+        for column_index in range(dataframe_viewer.columnHeader.model().columnCount()):
+            dataframe_viewer.auto_size_column(column_index)
 
     # Replace all GUI DataFrames with the current DataFrame of the same name from the scope show was called
     def reload_data(self):
