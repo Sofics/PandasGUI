@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine
+import pandas as pd
 
 from custom_back_end import cfg
 
@@ -9,3 +10,9 @@ OPENSHARKNET_ENGINE = create_engine(
     pool_recycle=3600,
     # echo=True,  # to see sql execution
 )
+
+SVN_PROJECTS = pd.read_sql_query("""
+select projectcode, projectname, svnrepository, svnprojectlead as "project_lead" from svnrepository s;
+""", OPENSHARKNET_ENGINE)
+
+print(SVN_PROJECTS)
