@@ -192,7 +192,12 @@ if __name__ == "__main__":
     stacked_widget.addWidget(fv)
     stacked_widget.show()
     app.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
-    import qtstylish
-    fv.setStyleSheet(qtstylish.light())
+    try:
+        import qtstylish
+    except Exception:
+        qtstylish = None
+
+    if qtstylish is not None:
+        fv.setStyleSheet(qtstylish.light())
 
     app.exec_()

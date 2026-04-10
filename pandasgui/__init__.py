@@ -1,6 +1,11 @@
 # Set version
-from pkg_resources import get_distribution
-__version__ = get_distribution('pandasgui').version
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("pandasgui")
+except PackageNotFoundError:
+    # Support running directly from a source checkout without installing the package.
+    __version__ = "0.2.13"
 
 # Logger config
 import logging

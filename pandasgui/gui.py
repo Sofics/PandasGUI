@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Callable, Union
 from dataclasses import dataclass
 import pandas as pd
-import pkg_resources
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
@@ -22,13 +21,36 @@ from pandasgui.widgets.json_viewer import JsonViewer
 from pandasgui.widgets.navigator import Navigator
 from pandasgui.widgets.figure_viewer import FigureViewer
 from pandasgui.widgets.settings_editor import SettingsEditor
-import qtstylish
 from pandasgui.widgets.python_highlighter import PythonHighlighter
 from IPython.core.magic import register_line_magic
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+try:
+    import qtstylish
+except Exception as exc:
+    qtstylish = None
+    logger.warning("qtstylish is unavailable; falling back to the classic theme. %s", exc)
+
+
+UNDELIVERED_CELLS_QUERY = """
+SELECT *
+FROM cellcollection cc
+LEFT JOIN (
+    SELECT DISTINCT tag
+    FROM AllDeliveredCells
+) adc ON cc.nr = adc.tag
+WHERE cc.nr NOT LIKE '%%CC%%'
+  AND adc.tag IS NULL
+  AND cc.name NOT REGEXP 'training|test|demo|mylittle'
+  AND NOT (
+      cc.nr REGEXP '^TC[0-9]{3}[a-z]?$'
+      AND CAST(SUBSTRING(cc.nr, 3, 3) AS UNSIGNED) < 173
+  )
+ORDER BY cc.nr;
+"""
 
 
 def except_hook(cls, exception, traceback):
@@ -127,8 +149,8 @@ class PandasGui(QtWidgets.QMainWindow):
 
         # Set window title and icon
         self.setWindowTitle("DataViewer")
-        pdgui_icon_path = pkg_resources.resource_filename(__name__, "resources/images/icon.png")
-        self.app.setWindowIcon(QtGui.QIcon(pdgui_icon_path))
+        pdgui_icon_path = Path(__file__).resolve().parent / "resources" / "images" / "icon.png"
+        self.app.setWindowIcon(QtGui.QIcon(str(pdgui_icon_path)))
 
         # Hide the question mark on dialogs
         self.app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
@@ -238,6 +260,7 @@ class PandasGui(QtWidgets.QMainWindow):
                  '(Re)load': [MenuItem(name='Delivered cells', func=self.load_and_select_delivered_cells),
                               MenuItem(name='Wafer volumes', func=self.load_and_select_wafer_volumes),
                               MenuItem(name='Last metric delivered cells', func=self.load_and_select_last_metric_delivered_cells),
+                              MenuItem(name='Missing registered delivered cells', func=self.load_and_select_missing_registered_delivered_cells),
                               # MenuItem(name='Daily ID2IP', func=self.load_and_select_id2ip),
                               ],
                  'Wafer volume': [MenuItem(name='Import new TSMC Excel', func=self.import_new_tsmc_excel),
@@ -265,11 +288,19 @@ class PandasGui(QtWidgets.QMainWindow):
             self.setStyleSheet("")
             self.store.settings.theme.value = 'classic'
         elif theme == "dark":
-            self.setStyleSheet(qtstylish.dark())
-            self.store.settings.theme.value = 'dark'
+            if qtstylish is None:
+                self.setStyleSheet("")
+                self.store.settings.theme.value = 'classic'
+            else:
+                self.setStyleSheet(qtstylish.dark())
+                self.store.settings.theme.value = 'dark'
         elif theme == "light":
-            self.setStyleSheet(qtstylish.light())
-            self.store.settings.theme.value = 'light'
+            if qtstylish is None:
+                self.setStyleSheet("")
+                self.store.settings.theme.value = 'classic'
+            else:
+                self.setStyleSheet(qtstylish.light())
+                self.store.settings.theme.value = 'light'
 
     def copy(self):
         if self.store.selected_pgdf.dataframe_explorer.active_tab == "DataFrame":
@@ -482,6 +513,23 @@ class PandasGui(QtWidgets.QMainWindow):
         shape = pgdf.df_unfiltered.shape
         shape = f"{shape[0]:,} x {shape[1]:,}"
         find_and_update_item_in_the_navigator(self.navigator, "Last metric delivered cells", shape)
+
+    def load_and_select_missing_registered_delivered_cells(self):
+        # (re)query cellcollection entries that have not been delivered yet.
+        undelivered_cells = pd.read_sql_query(UNDELIVERED_CELLS_QUERY, TEGGY_ENGINE)
+
+        self.store.select_pgdf("Missing registered delivered cells")
+
+        pgdf = self.store.data["Missing registered delivered cells"]
+        pgdf.df = undelivered_cells
+        pgdf.df_unfiltered = undelivered_cells
+        pgdf.data_changed()  # note, has self.refresh_ui and refresh_statistics in it
+        pgdf.apply_filters()
+
+        # update shape in nav + select the nav item
+        shape = pgdf.df_unfiltered.shape
+        shape = f"{shape[0]:,} x {shape[1]:,}"
+        find_and_update_item_in_the_navigator(self.navigator, "Missing registered delivered cells", shape)
 
     def load_and_select_id2ip(self):
         TOMORROW = pd.to_datetime("today").normalize() + pd.Timedelta(days=1)

@@ -1,7 +1,7 @@
 import re
 import time
+from pathlib import Path
 
-import pkg_resources
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
@@ -17,6 +17,8 @@ class FindToolbar(QtWidgets.QToolBar):
         """
         super().__init__(parent=parent)
 
+        images_dir = Path(__file__).resolve().parents[1] / "resources" / "images"
+
         # global variable initialization
         self.findThread = None
         # List of model QModelIndexes for indexes where a match was found
@@ -24,7 +26,6 @@ class FindToolbar(QtWidgets.QToolBar):
         # Current QModelIndex
         self.search_selection = None
         self.match_flags = {"regex": False, "case": False, "whole word": False}
-        self.image_folder = "../resources/images"
 
         # main toolbar widget
         find_toolbar_widget = QtWidgets.QWidget()
@@ -42,11 +43,8 @@ class FindToolbar(QtWidgets.QToolBar):
         # add match modification
 
         # add match case button
-        match_case_icon_raw_path = self.image_folder + "/case-sensitive.svg"
-        match_case_icon_path = pkg_resources.resource_filename(
-            __name__, match_case_icon_raw_path
-        )
-        match_case_icon = QtGui.QIcon(match_case_icon_path)
+        match_case_icon_path = images_dir / "case-sensitive.svg"
+        match_case_icon = QtGui.QIcon(str(match_case_icon_path))
         self.match_case_button = QtWidgets.QToolButton(self.find_textbox)
         self.match_case_button.setIcon(match_case_icon)
         self.match_case_button.setToolTip("Match Case")
@@ -56,9 +54,8 @@ class FindToolbar(QtWidgets.QToolBar):
         self.find_textbox.add_button(self.match_case_button)
 
         # add match regex button
-        regex_icon_raw_path = self.image_folder + "/regex.svg"
-        regex_icon_path = pkg_resources.resource_filename(__name__, regex_icon_raw_path)
-        regex_icon = QtGui.QIcon(regex_icon_path)
+        regex_icon_path = images_dir / "regex.svg"
+        regex_icon = QtGui.QIcon(str(regex_icon_path))
         self.match_regex_button = QtWidgets.QToolButton(self.find_textbox)
         self.match_regex_button.setIcon(regex_icon)
         self.match_regex_button.setToolTip("Use Regular Expression")
@@ -68,11 +65,8 @@ class FindToolbar(QtWidgets.QToolBar):
         self.find_textbox.add_button(self.match_regex_button)
 
         # add match exactly button
-        match_exactly_icon_raw_path = self.image_folder + "/match-exactly.svg"
-        match_exactly_icon_path = pkg_resources.resource_filename(
-            __name__, match_exactly_icon_raw_path
-        )
-        whole_word_icon = QtGui.QIcon(match_exactly_icon_path)
+        match_exactly_icon_path = images_dir / "match-exactly.svg"
+        whole_word_icon = QtGui.QIcon(str(match_exactly_icon_path))
         self.match_exactly_button = QtWidgets.QToolButton(self.find_textbox)
         self.match_exactly_button.setIcon(whole_word_icon)
         self.match_exactly_button.setToolTip("Match Exactly")
@@ -91,10 +85,8 @@ class FindToolbar(QtWidgets.QToolBar):
 
         # go to next match
         previous_match_button = QtWidgets.QPushButton()
-        up_arrow_icon_raw_path = self.image_folder + "/arrow-up.svg"
-        up_arrow_icon_path = pkg_resources.resource_filename(
-            __name__, up_arrow_icon_raw_path)
-        up_arrow_icon = QtGui.QIcon(up_arrow_icon_path)
+        up_arrow_icon_path = images_dir / "arrow-up.svg"
+        up_arrow_icon = QtGui.QIcon(str(up_arrow_icon_path))
         previous_match_button.setIcon(up_arrow_icon)
         previous_match_button.setToolTip("Previous match")
         previous_match_button.clicked.connect(self.select_previous_match)
@@ -102,11 +94,8 @@ class FindToolbar(QtWidgets.QToolBar):
 
         # go to previous match
         next_match_button = QtWidgets.QPushButton()
-        down_arrow_icon_raw_path = self.image_folder + "/arrow-down.svg"
-        down_arrow_icon_path = pkg_resources.resource_filename(
-            __name__, down_arrow_icon_raw_path
-        )
-        down_arrow_icon = QtGui.QIcon(down_arrow_icon_path)
+        down_arrow_icon_path = images_dir / "arrow-down.svg"
+        down_arrow_icon = QtGui.QIcon(str(down_arrow_icon_path))
         next_match_button.setIcon(down_arrow_icon)
         next_match_button.setToolTip("Next match")
         next_match_button.clicked.connect(self.select_next_match)
@@ -114,11 +103,8 @@ class FindToolbar(QtWidgets.QToolBar):
 
         # close find toolbar
         close_find_button = QtWidgets.QPushButton()
-        cancel_icon_raw_path = self.image_folder + "/close.svg"
-        cancel_icon_path = pkg_resources.resource_filename(
-            __name__, cancel_icon_raw_path
-        )
-        close_icon = QtGui.QIcon(cancel_icon_path)
+        cancel_icon_path = images_dir / "close.svg"
+        close_icon = QtGui.QIcon(str(cancel_icon_path))
         close_find_button.setIcon(close_icon)
         close_find_button.setToolTip("Close Find Bar")
         close_find_button.clicked.connect(self.hide_find_bar)
