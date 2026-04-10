@@ -1,7 +1,7 @@
 import time
 
 from custom_back_end.teggydb import TEGGY_ENGINE
-from custom_back_end.opensharknetdb import OPENSHARKNET_ENGINE
+from custom_back_end.opensharknetdb import merge_svn_projects
 from pandasgui import show
 import pandas as pd
 
@@ -32,7 +32,7 @@ def main():
             # Note: filling other DF's with just 1 row so that the fields are set correctly for graphs
             "Wafer volumes": pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE),
             "Last metric delivered cells": all_delived_cells.iloc[:1].copy(),  # show latest metrics only
-            "Missing registered delivered cells": pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE),
+            "Missing registered delivered cells": merge_svn_projects(pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE)),
             # "id2ip": pd.read_sql_query("select type_id, type, nr, date, newstatus as status from id2ip2statushistory limit 1;", OPENSHARKNET_ENGINE),
             # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
             # that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"

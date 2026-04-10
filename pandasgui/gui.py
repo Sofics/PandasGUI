@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 import pandasgui
-from custom_back_end.opensharknetdb import OPENSHARKNET_ENGINE
+from custom_back_end.opensharknetdb import OPENSHARKNET_ENGINE, merge_svn_projects
 from custom_back_end.parse_tsmc_export import parse_tsmc_export_to_wafer_volumes
 from custom_back_end.teggydb import TEGGY_ENGINE
 from pandasgui.store import PandasGuiStore
@@ -516,7 +516,9 @@ class PandasGui(QtWidgets.QMainWindow):
 
     def load_and_select_missing_registered_delivered_cells(self):
         # (re)query cellcollection entries that have no registered delivered cells yet.
-        cellcollections_missing_registry = pd.read_sql_query(MISSING_REGISTERED_DELIVERED_CELLS_QUERY, TEGGY_ENGINE)
+        cellcollections_missing_registry = merge_svn_projects(
+            pd.read_sql_query(MISSING_REGISTERED_DELIVERED_CELLS_QUERY, TEGGY_ENGINE)
+        )
 
         self.store.select_pgdf("Missing registered delivered cells")
 
