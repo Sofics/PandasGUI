@@ -6,7 +6,7 @@ from pandasgui import show
 import pandas as pd
 
 EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG = """
-SELECT cc.nr, cc.name, cc.tapeoutdate, cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
+SELECT cc.nr, cc.name, cc.tapeoutdate as "initial tapeoutdate", cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
 FROM cellcollection cc
 LIMIT 1;
 """

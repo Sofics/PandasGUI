@@ -36,7 +36,7 @@ except Exception as exc:
 
 
 MISSING_REGISTERED_DELIVERED_CELLS_QUERY = """
-SELECT cc.nr, cc.name, cc.tapeoutdate, cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
+SELECT cc.nr, cc.name, cc.tapeoutdate as "initial tapeoutdate", cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
 FROM cellcollection cc
 LEFT JOIN (
     SELECT DISTINCT tag
