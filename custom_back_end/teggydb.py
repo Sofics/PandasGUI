@@ -10,6 +10,7 @@ import custom_back_end.cfg as cfg
 TEGGY_ENGINE = create_engine(
     f"mysql+pymysql://{cfg.TeggyDB.username}:{cfg.TeggyDB.password}@{cfg.TeggyDB.host}/{cfg.TeggyDB.name}",
     pool_recycle=3600,
+    connect_args={"connect_timeout": 15},
     # echo=True,  # to see sql execution
 )
 
