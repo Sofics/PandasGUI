@@ -11,11 +11,9 @@ OPENSHARKNET_ENGINE = create_engine(
     # echo=True,  # to see sql execution
 )
 
-SVN_PROJECTS = pd.read_sql_query("""
-select projectcode, projectname, svnrepository, svnprojectlead as "projectlead" from svnrepository s;
-""", OPENSHARKNET_ENGINE)
-
-
 def merge_svn_projects(df: pd.DataFrame) -> pd.DataFrame:
     """Merge given DF with projectcode, projectname, and project_lead based on the svnrespository field."""
-    return df.merge(SVN_PROJECTS, on="svnrepository", how="left")
+    svn_projects = pd.read_sql_query("""
+select projectcode, projectname, svnrepository, svnprojectlead as "projectlead" from svnrepository s;
+""", OPENSHARKNET_ENGINE)
+    return df.merge(svn_projects, on="svnrepository", how="left")
