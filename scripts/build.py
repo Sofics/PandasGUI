@@ -14,7 +14,7 @@ project_path = Path(r"C:/repos/PandasGUI")
 project_src_path = project_path / "src"
 sw_name = "DataViewer"
 network_sw_root = Path(
-    "//domainserver/SharedDocs/6 - IT/99 - Software/custom_sofics_software"  # network folder that holds up-to-date SW
+    "//domainserver/softwareupdates"  # network folder that holds up-to-date SW
 )
 
 network_sw_root = network_sw_root / "windows" if os.name == "nt" else "linux"  # win/linux build subfolder
@@ -72,7 +72,7 @@ print(f"\nBuild finished, took {round(end - start)}s.\n")
 if real_build:
 
     def compress_to_zip(input_dir, output_zip):
-        with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
             for root, dirs, files in os.walk(input_dir):
                 for file in files:
                     full_path = os.path.join(root, file)
