@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 import pandas as pd
 
+
 from custom_back_end import cfg
 
 # NOTE: was only needed for gui.py "Daily ID2IP", which is currently commented out
@@ -18,3 +19,5 @@ def merge_svn_projects(df: pd.DataFrame) -> pd.DataFrame:
 select projectcode, projectname, svnrepository, svnprojectlead as "projectlead" from svnrepository s;
 """, OPENSHARKNET_ENGINE)
     return df.merge(svn_projects, on="svnrepository", how="left")
+
+cfg.logger.info("Done with opensharknetdb.py")

@@ -1,15 +1,13 @@
 import time
 import sys
 import traceback
-import logging
 
 from custom_back_end.teggydb import TEGGY_ENGINE
 from custom_back_end.opensharknetdb import merge_svn_projects
+from custom_back_end.cfg import logger
+
 from pandasgui import show
 import pandas as pd
-
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s", stream=sys.stdout)
-log = logging.getLogger(__name__)
 
 EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG = """
 SELECT cc.nr, cc.name, cc.tapeoutdate as "initial tapeoutdate", cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
@@ -20,15 +18,15 @@ LIMIT 1;
 
 def _step(label, t0):
     elapsed = time.time() - t0
-    log.info(f"[DIAG] {label} ({elapsed:.1f}s elapsed)")
+    logger.info(f"[DIAG] {label} ({elapsed:.1f}s elapsed)")
 
 
 def main():
     try:
-        log.info("[DIAG] main() reached")
+        logger.info("[DIAG] main() reached")
         t0 = time.time()
 
-        log.info("[DIAG] querying AllDeliveredCells...")
+        logger.info("[DIAG] querying AllDeliveredCells...")
         all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
         _step("AllDeliveredCells done", t0)
 
@@ -39,22 +37,22 @@ def main():
             "Delivered cells": all_delived_cells,
         }
 
-        log.info("[DIAG] querying DetailedWaferVolume...")
+        logger.info("[DIAG] querying DetailedWaferVolume...")
         named_dataframes["Wafer volumes"] = pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE)
         _step("DetailedWaferVolume done", t0)
 
         named_dataframes["Last metric delivered cells"] = all_delived_cells.iloc[:1].copy()
 
-        log.info("[DIAG] querying cellcollection + merge_svn_projects...")
+        logger.info("[DIAG] querying cellcollection + merge_svn_projects...")
         named_dataframes["Missing registered delivered cells"] = merge_svn_projects(pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE))
         _step("cellcollection + merge_svn_projects done", t0)
 
-        log.info("[DIAG] calling show()...")
+        logger.info("[DIAG] calling show()...")
         show(**named_dataframes)
-        log.info("[DIAG] show() returned")
+        logger.info("[DIAG] show() returned")
 
     except Exception:
-        log.error("UNHANDLED EXCEPTION:\n" + traceback.format_exc())
+        logger.error("UNHANDLED EXCEPTION:\n" + traceback.format_exc())
         if sys.stdin.isatty():
             input("Press Enter to close...")
 

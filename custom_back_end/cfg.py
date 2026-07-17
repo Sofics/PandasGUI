@@ -1,8 +1,13 @@
 from base64 import b64decode
+import logging
+import sys
 
 from sqlalchemy import create_engine
 
 import custom_back_end.passwords as passwords
+
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s", stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 
 class PysharkDB:

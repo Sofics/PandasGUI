@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pandas = "*"
+pandas = "==2.3.3"
 pyqt5 = "*"
 pyqt5-sip = "*"
 pyqtwebengine = "*"
@@ -20,8 +20,8 @@ qtstylish = ">=0.1.2"
 pywin32 = "*"
 setuptools = "*"
 pandasgui = {file = "."}
-sqlalchemy = "*"
-pymysql = "*"
+sqlalchemy = "==2.0.44"
+pymysql = "==1.1.2"
 cryptography = "*"
 pyinstaller = "*"
 openpyxl = "*"
