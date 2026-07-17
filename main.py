@@ -46,9 +46,10 @@ def main():
         print("[DIAG] show() returned", flush=True)
 
     except Exception as e:
-        import traceback
+        import traceback, sys
         traceback.print_exc()
-        input()
+        if sys.stdin.isatty():
+            input("Press Enter to close...")
 
 
 if __name__ == "__main__":
