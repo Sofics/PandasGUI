@@ -10,7 +10,7 @@ from pathlib import Path
 
 # REMARK: For different SW / OS, change the first variables.
 
-project_path = Path(r"C:/repos/PandasGUI")
+project_path = Path(r"C:/repos/DataViewer")
 project_src_path = project_path / "src"
 sw_name = "DataViewer"
 network_sw_root = Path(
