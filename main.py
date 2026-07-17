@@ -14,34 +14,36 @@ LIMIT 1;
 
 def main():
     try:
-        # TODO some kind of loading bar / progress dlg?
-
+        print("[DIAG] main() reached", flush=True)
         timestamp = time.time()
 
-        # For how this view got created, see bottom of this file
+        print("[DIAG] querying AllDeliveredCells...", flush=True)
         all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
+        print("[DIAG] AllDeliveredCells done", flush=True)
 
-        # transform None -> NaT, so comparison in GUI query expressions works:
         all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
-        # Turn metrics into strings => no comma and more readable (NaN => "")
         all_delived_cells["metric"] = all_delived_cells["metric"].apply(lambda x: f"{int(x)}" if pd.notna(x) else "")
 
-        # Note: start with delivered cells loaded and others empty until desired differently
         named_dataframes = {
             "Delivered cells": all_delived_cells,
-            # Note: filling other DF's with just 1 row so that the fields are set correctly for graphs
-            "Wafer volumes": pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE),
-            "Last metric delivered cells": all_delived_cells.iloc[:1].copy(),  # show latest metrics only
-            "Missing registered delivered cells": merge_svn_projects(pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE)),
-            # "id2ip": pd.read_sql_query("select type_id, type, nr, date, newstatus as status from id2ip2statushistory limit 1;", OPENSHARKNET_ENGINE),
-            # TODO add a named dataframe with only TSMC cells & columns exactly as how Johan wants it
-            # that closely resembles columns  in TSMC's ip registration template"S:\3 - Technical\9000 - TSMC9000\IP registration\IP Register 2.0_template.xls"
-            # Action / IP Category / IP Name / Geometry / Technology (1) / Technology (2) / IP Types / Voltage / description / post in portfolio / reason not post / RFQ project / Non-NDA datasheet or product brief / IP Version / The latest version / design kit / tape-out date / silicon report / DRM (number (version)) / Logic Spice model  (number (version)) / contractually royalty bearing / tsmc comment
         }
 
-        print(f"DB and DF stuff took {time.time() - timestamp} seconds.")
+        print("[DIAG] querying DetailedWaferVolume...", flush=True)
+        named_dataframes["Wafer volumes"] = pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE)
+        print("[DIAG] DetailedWaferVolume done", flush=True)
 
+        named_dataframes["Last metric delivered cells"] = all_delived_cells.iloc[:1].copy()
+
+        print("[DIAG] querying cellcollection + merge_svn_projects...", flush=True)
+        named_dataframes["Missing registered delivered cells"] = merge_svn_projects(pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE))
+        print("[DIAG] cellcollection + merge_svn_projects done", flush=True)
+
+        elapsed = time.time() - timestamp
+        print(f"DB and DF stuff took {elapsed} seconds.", flush=True)
+
+        print("[DIAG] calling show()...", flush=True)
         show(**named_dataframes)
+        print("[DIAG] show() returned", flush=True)
 
     except Exception as e:
         import traceback
