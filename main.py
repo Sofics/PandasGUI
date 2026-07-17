@@ -1,9 +1,15 @@
 import time
+import sys
+import traceback
+import logging
 
 from custom_back_end.teggydb import TEGGY_ENGINE
 from custom_back_end.opensharknetdb import merge_svn_projects
 from pandasgui import show
 import pandas as pd
+
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s", stream=sys.stdout)
+log = logging.getLogger(__name__)
 
 EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG = """
 SELECT cc.nr, cc.name, cc.tapeoutdate as "initial tapeoutdate", cc.foundry, cc.node, cc.technology, cc.svnrepository, cc.cellcollectionid
@@ -12,14 +18,19 @@ LIMIT 1;
 """
 
 
+def _step(label, t0):
+    elapsed = time.time() - t0
+    log.info(f"[DIAG] {label} ({elapsed:.1f}s elapsed)")
+
+
 def main():
     try:
-        print("[DIAG] main() reached", flush=True)
-        timestamp = time.time()
+        log.info("[DIAG] main() reached")
+        t0 = time.time()
 
-        print("[DIAG] querying AllDeliveredCells...", flush=True)
+        log.info("[DIAG] querying AllDeliveredCells...")
         all_delived_cells = pd.read_sql_query("select * from AllDeliveredCells;", TEGGY_ENGINE)
-        print("[DIAG] AllDeliveredCells done", flush=True)
+        _step("AllDeliveredCells done", t0)
 
         all_delived_cells["delivery_date"] = pd.to_datetime(all_delived_cells["delivery_date"], errors="coerce")
         all_delived_cells["metric"] = all_delived_cells["metric"].apply(lambda x: f"{int(x)}" if pd.notna(x) else "")
@@ -28,26 +39,22 @@ def main():
             "Delivered cells": all_delived_cells,
         }
 
-        print("[DIAG] querying DetailedWaferVolume...", flush=True)
+        log.info("[DIAG] querying DetailedWaferVolume...")
         named_dataframes["Wafer volumes"] = pd.read_sql_query("select * from DetailedWaferVolume limit 1;", TEGGY_ENGINE)
-        print("[DIAG] DetailedWaferVolume done", flush=True)
+        _step("DetailedWaferVolume done", t0)
 
         named_dataframes["Last metric delivered cells"] = all_delived_cells.iloc[:1].copy()
 
-        print("[DIAG] querying cellcollection + merge_svn_projects...", flush=True)
+        log.info("[DIAG] querying cellcollection + merge_svn_projects...")
         named_dataframes["Missing registered delivered cells"] = merge_svn_projects(pd.read_sql_query(EFFICIENT_ONE_ROW_CC_QUERY_FOR_MISSING_REG, TEGGY_ENGINE))
-        print("[DIAG] cellcollection + merge_svn_projects done", flush=True)
+        _step("cellcollection + merge_svn_projects done", t0)
 
-        elapsed = time.time() - timestamp
-        print(f"DB and DF stuff took {elapsed} seconds.", flush=True)
-
-        print("[DIAG] calling show()...", flush=True)
+        log.info("[DIAG] calling show()...")
         show(**named_dataframes)
-        print("[DIAG] show() returned", flush=True)
+        log.info("[DIAG] show() returned")
 
-    except Exception as e:
-        import traceback, sys
-        traceback.print_exc()
+    except Exception:
+        log.error("UNHANDLED EXCEPTION:\n" + traceback.format_exc())
         if sys.stdin.isatty():
             input("Press Enter to close...")
 
