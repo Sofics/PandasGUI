@@ -193,6 +193,13 @@ if __name__ == "__main__":
     stacked_widget.show()
     app.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
     try:
+        import sys as _sys, types as _types, importlib.metadata as _meta
+        if 'pkg_resources' not in _sys.modules:
+            _shim = _types.ModuleType('pkg_resources')
+            class _Dist:
+                def __init__(self, name): self.version = _meta.version(name)
+            _shim.get_distribution = _Dist
+            _sys.modules['pkg_resources'] = _shim
         import qtstylish
     except Exception:
         qtstylish = None
