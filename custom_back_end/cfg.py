@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 
 import custom_back_end.passwords as passwords
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s", stream=sys.stdout)
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(message)s", stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 
