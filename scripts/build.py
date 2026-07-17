@@ -59,6 +59,7 @@ if real_build:
     command_args.append("--upx-exclude=python3.dll")
     command_args.append("--upx-exclude=api-ms-win-core-file-l2-1-0.dll")
     command_args.append("--upx-exclude=*qt*")
+    command_args.append("--upx-exclude=ntdll.dll")
 
 
 command_args.append(f"main.py")

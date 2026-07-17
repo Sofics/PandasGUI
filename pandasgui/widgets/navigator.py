@@ -15,11 +15,17 @@ from pandasgui.widgets.json_viewer import JsonViewer
 # Use win32api on Windows because the pynput and mouse packages cause lag with PyQt drag-n-drop
 # https://github.com/moses-palmer/pynput/issues/390
 if os.name == 'nt':
-    import win32api
+    try:
+        import win32api
 
+        def mouse_pressed():
+            return win32api.GetKeyState(0x01) not in [0, 1]
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("win32api unavailable; drag-release detection disabled")
 
-    def mouse_pressed():
-        return win32api.GetKeyState(0x01) not in [0, 1]
+        def mouse_pressed():
+            return False
 else:
     from pynput import mouse
 
